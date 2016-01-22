@@ -1,0 +1,19 @@
+{
+  "name": "yahoo_fantasy_api",
+  "version": "1.0.0",
+  "description": "Yahoo fantsy footabll api ",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "JSONStream": "^1.0.7",
+    "express": "^4.13.3",
+    "moment": "^2.11.1",
+    "mongoose": "^4.2.4",
+    "request": "^2.65.0",
+    "underscore": "^1.8.3"
+  }
+}
