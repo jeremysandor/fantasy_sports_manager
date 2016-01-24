@@ -5,6 +5,8 @@ var RosterPlayer = require('../models/rosterPlayer');
 var config = require('../config');
 var JSONStream = require('JSONStream');
 var _u = require('underscore');
+var moment = require('moment');
+var utils = require('./utils');
 
 var CONSUMER_KEY = config.consumer_key;
 var CONSUMER_SECRET = config.consumer_secret;
@@ -19,23 +21,23 @@ User.findOne({_id: "568ef435000ad777555d1c41"}, function(err, user) {
   SESSION_HANDLE = user.session_handle;
 });
 
-// exports.teams = function(req, res, next) {
-//   var oauth =
-//       { consumer_key: CONSUMER_KEY
-//       , consumer_secret: CONSUMER_SECRET
-//       , token: TOKEN //perm_data.oauth_token
-//       , token_secret: TOKEN_SECRET //perm_data.oauth_token_secret
-//       }
-//     // , url = 'http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json';
-//     , url = 'http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nba/teams?format=json';
-//     // , url = 'http://fantasysports.yahooapis.com/fantasy/v2/team/348.l.188062.t.10/roster?format=json'
-//   request.get({url:url, oauth:oauth}, function (e, r, body) {
-//     console.log('ERROR:', e);
-//     // console.log('R', r.body)
-//     console.log('BODY: ', body);
-//     res.send(body);
-//   })
-// }
+exports.teams = function(req, res, next) {
+  var oauth =
+      { consumer_key: CONSUMER_KEY
+      , consumer_secret: CONSUMER_SECRET
+      , token: TOKEN //perm_data.oauth_token
+      , token_secret: TOKEN_SECRET //perm_data.oauth_token_secret
+      }
+    // , url = 'http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues?format=json';
+    , url = 'http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nba/teams?format=json';
+    // , url = 'http://fantasysports.yahooapis.com/fantasy/v2/team/348.l.188062.t.10/roster?format=json'
+  request.get({url:url, oauth:oauth}, function (e, r, body) {
+    console.log('ERROR:', e);
+    // console.log('R', r.body)
+    console.log('BODY: ', body);
+    res.send(body);
+  })
+}
 
 exports.index = function(req, res, next) {
   var oauth =
@@ -66,7 +68,7 @@ exports.index = function(req, res, next) {
       // console.log('playerKey', playerKey);
       data.forEach(function(elem, index) {
         // console.log('elem', elem);
-        finalData = translateData(elem);
+        finalData = utils.translateData(elem);
         console.log('finalData', finalData);
         var rosterPlayer = new RosterPlayer(finalData);
         rosterPlayer.save();
@@ -75,30 +77,35 @@ exports.index = function(req, res, next) {
     .pipe(res);
 }
 
-var translateData = function (data) {
-  var finalData = {}
-  _u.each(data, function(v, k) {
-    _u.each(v[0], function(elem) {
-      _u.each(elem, function(val, key) {
-        if (key === 'eligible_positions') {
-          positions = [];
-          _u.each(val, function(position) {
-            positions.push(position.position);
-          });
-          finalData[key] = positions;
-        }
-        if (['headshot', 'image_url', 'has_player_notes', 'eligible_positions'].indexOf(key) === -1) {
-          finalData[key] = val;
-        }
+exports.editRoster = function(req, res, next) {
+  var swap = {}
+
+  var players = RosterPlayer.find({}, function(err, players) {
+    // console.log('players', players);
+    swaps = utils.editRoster(players, utils.matchPlayers);
+    // console.log('swap0', swaps);
+
+    _u.each(swaps, function(swap) {
+      console.log('swap', swap);
+      var date = moment(new Date()).format("YYYY-MM-DD");
+      var activateKey = swap.activate.playerKey;
+      var activatePostion = swap.activate.position;
+      var benchKey = swap.bench.playerKey;
+      var benchPosition = swap.bench.position;
+
+      var body = '<?xml version="1.0"?><fantasy_content><roster><coverage_type>date</coverage_type><date>' + date + '</date><players><player><player_key>' + activateKey + '</player_key><position>'+ activatePostion +'</position></player><player><player_key>' + benchKey + '</player_key><position>' + benchPosition + '</position></player></players></roster></fantasy_content>'
+      var headers = {'Content-Type': 'application/xml'};
+      var oauth =
+          { consumer_key: CONSUMER_KEY
+          , consumer_secret: CONSUMER_SECRET
+          , token: TOKEN
+          , token_secret: TOKEN_SECRET
+          }
+        , url = 'http://fantasysports.yahooapis.com/fantasy/v2/team/353.l.221086.t.7/roster'
+      request.put({url:url, oauth:oauth, headers: headers, body:body}, function(e, r, body) {
+        res.send(body);
       });
     });
-    _u.each(v[1], function(val, key) {
-      finalData[key] = val[1].position;
-    });
   });
-  console.log('FINALDATA', finalData);
-  if (_u.isEmpty(finalData) === false) {
-    return finalData
-  }
 }
 
