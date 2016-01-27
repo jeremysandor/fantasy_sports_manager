@@ -48,21 +48,45 @@ router.get('/handle_yahoo_callback', function(req, res) {
   res.end(JSON.stringify(req.query, null, 2));
 });
 
-router.get('/refreshtoken', function(req, res) {
+router.post('/refreshtoken', function(req, res) {
   var oauth =
       { consumer_key: CONSUMER_KEY
       , consumer_secret: CONSUMER_SECRET
       , token: TOKEN //perm_data.oauth_token
       , token_secret: TOKEN_SECRET //perm_data.oauth_token_secret
-      , oauth_session_handle: SESSION_HANDLE
+      , session_handle: SESSION_HANDLE
       }
     , url = 'https://api.login.yahoo.com/oauth/v2/get_token';
   console.log('GET REFRESHTOKEN OAUTH', oauth);
-  request.get({url:url, oauth:oauth}, function (e, r, body) {
-    console.log('ERROR:', e);
-    console.log('R', r.body)
-    console.log('BODY: ', body);
-    res.send(body);
+  request.post({url:url, oauth:oauth}, function (e, r, body) {
+    // console.log('ERROR:', e);
+    // console.log('R', r)
+    // console.log('BODY: ', body);
+    // console.log('body', body.split('&'));
+    var token = '';
+    var token_secret = '';
+    var splitBody = body.split('&');
+    for (elem of splitBody) {
+      console.log('elem', elem);
+      var splitElem = elem.split('=');
+      if (splitElem[0] === 'oauth_token') {
+        token = splitElem[1];
+      }
+      if (splitElem[0] === 'oauth_token_secret') {
+        token_secret = splitElem[1];
+      }
+    }
+    console.log('token, token_secret', token, token_secret);
+
+    User.update({_id: "568ef435000ad777555d1c41"}, {token: token, token_secret: token_secret},
+    function(err, numberAffected, rawResponse) {
+      console.log('ERR', err);
+      console.log('numberAffected', numberAffected);
+      console.log('rawResponse', rawResponse);
+     //handle it
+    });
+
+    // res.send(body);
   })
 
 });
