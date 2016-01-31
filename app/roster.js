@@ -103,13 +103,9 @@ exports.index = function(req, res, next) {
     })
     .on('end', function() {
       data = JSON.parse(body);
-      // console.log('DATA', data);
-      // var playerKey = data[0].player[0][1].player_id;
-      // console.log('playerKey', playerKey);
       data.forEach(function(elem, index) {
-        // console.log('elem', elem);
         finalData = utils.translateData(elem);
-        console.log('finalData', finalData);
+        RosterPlayer.remove({}, function() {});
         var rosterPlayer = new RosterPlayer(finalData);
         rosterPlayer.save();
       });
@@ -143,7 +139,6 @@ exports.editRoster = function(req, res, next) {
           }
         , url = 'http://fantasysports.yahooapis.com/fantasy/v2/team/353.l.221086.t.7/roster'
       request.put({url:url, oauth:oauth, headers: headers, body:body}, function(e, r, body) {
-        console.log('R', r);
         res.send(body);
       });
     });

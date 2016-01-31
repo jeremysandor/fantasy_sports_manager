@@ -12,9 +12,7 @@ var roster = require('./app/roster');
 
 mongoose.connect('mongodb://localhost/test');
 db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function(callback) {
-  console.log('database open')
-});
+db.once('open', function(callback) {console.log('database open')});
 
 var app = express();
 app.use(session({secret: 'grant'}));

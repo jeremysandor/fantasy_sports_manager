@@ -21,14 +21,12 @@ exports.translateData = function(data) {
       finalData[key] = val[1].position;
     });
   });
-  console.log('FINALDATA', finalData);
   if (_u.isEmpty(finalData) === false) {
     return finalData
   }
 }
 
 exports.editRoster = function(players, callback) {
-  console.log('editRoster');
   var activate = [];
   var deactivate = [];
   _u.each(players, function(player) {
@@ -43,7 +41,6 @@ exports.editRoster = function(players, callback) {
 }
 
 exports.matchPlayers = function(deactivate, activate) {
-  console.log('matchPlayers');
   swaps = []
   _u.each(activate, function(activatePlayer) {
     _u.each(deactivate, function(deactivatePlayer) {
@@ -68,8 +65,6 @@ exports.matchPlayers = function(deactivate, activate) {
             swapKeys.push(swap.bench.playerKey);
           });
           if (_u.indexOf(swapKeys, deactivatePlayer.player_key) === -1 && _u.indexOf(swapKeys, activatePlayer.player_key) === -1) {
-            // console.log('activatePlayer', activatePlayer);
-            // console.log('deactivatePlayer', deactivatePlayer);
             swaps.push({activate:
                         {
                           playerKey: activatePlayer.player_key, position: insertAt
