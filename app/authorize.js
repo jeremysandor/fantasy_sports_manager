@@ -1,3 +1,5 @@
+// authorize is called via /connect/yahoo
+
 var User = require('../models/user');
 var request = require('request');
 var config = require('../config');
@@ -42,8 +44,12 @@ exports.refreshToken = function(req, res) {
   request.post({url:url, oauth:oauth}, function (e, r, body) {
     // console.log('ERROR:', e);
     // console.log('R', r)
-    // console.log('BODY: ', body);
+    console.log('BODY: ', body);
     // console.log('body', body.split('&'));
+    
+    // var decodeBody = decodeURIComponent(body);
+    // console.log('decodeBody', decodeBody)
+    
     var token = '';
     var token_secret = '';
     var splitBody = body.split('&');
@@ -51,7 +57,7 @@ exports.refreshToken = function(req, res) {
       console.log('elem', elem);
       var splitElem = elem.split('=');
       if (splitElem[0] === 'oauth_token') {
-        token = splitElem[1];
+        token = decodeURIComponent(splitElem[1]);
       }
       if (splitElem[0] === 'oauth_token_secret') {
         token_secret = splitElem[1];
@@ -67,6 +73,6 @@ exports.refreshToken = function(req, res) {
      //handle it
     });
 
-    // res.send(body);
+    res.send(body);
   })
 }

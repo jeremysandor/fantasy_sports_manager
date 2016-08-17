@@ -11,29 +11,42 @@ exports.translateData = function(data) {
             positions.push(position.position);
           });
           finalData[key] = positions;
-        }
-        if (['headshot', 'image_url', 'has_player_notes', 'eligible_positions'].indexOf(key) === -1) {
+        };
+        if (key === 'bye_weeks') {
+          console.log('got the bye week', val)
+          finalData[key] = val.week;
+        };
+        if (key === 'name') {
+          finalData[key] = val.full
+        };
+        if (['bye_weeks', 'name', 'headshot', 'image_url', 'has_player_notes', 'eligible_positions'].indexOf(key) === -1) {
           finalData[key] = val;
         }
       });
     });
+
+    // set current position
     _u.each(v[1], function(val, key) {
       finalData[key] = val[1].position;
     });
+
   });
+  console.log('finalData', finalData)
   if (_u.isEmpty(finalData) === false) {
     return finalData
   }
 }
 
+
+// edit roster and matchplayers are confusing. could def use a rewrite
 exports.editRoster = function(players, callback) {
   var activate = [];
   var deactivate = [];
   _u.each(players, function(player) {
-    if (player['status'] === 'INJ' && player.selected_position !== 'BN') {
+    if (player['status'] === 'PUP-P' && player.selected_position !== 'BN') {
       deactivate.push(player);
     }
-    if (player['status'] !== 'INJ' && player.selected_position === 'BN') {
+    if (player['status'] !== 'PUP-P' && player.selected_position === 'BN') {
       activate.push(player);
     }
   });
@@ -50,28 +63,30 @@ exports.matchPlayers = function(deactivate, activate) {
         if (swaps.length === 0) {
           swaps.push({activate:
                         {
-                          playerKey: activatePlayer.player_key, position: insertAt
+                          player_key: activatePlayer.player_key, position: insertAt
                         },
                       bench:
                         {
-                          playerKey: deactivatePlayer.player_key, position: 'BN'}
+                          player_key: deactivatePlayer.player_key, position: 'BN'
                         }
-                      )
+                      })
         }
         else {
           swapKeys = [];
           _u.each(swaps, function(swap) {
-            swapKeys.push(swap.activate.playerKey);
-            swapKeys.push(swap.bench.playerKey);
+            console.log('swap', swap);
+            swapKeys.push(swap.activate.player_key);
+            swapKeys.push(swap.bench.player_key);
           });
+          console.log('swapKeys', swapKeys);
           if (_u.indexOf(swapKeys, deactivatePlayer.player_key) === -1 && _u.indexOf(swapKeys, activatePlayer.player_key) === -1) {
             swaps.push({activate:
                         {
-                          playerKey: activatePlayer.player_key, position: insertAt
+                          player_key: activatePlayer.player_key, position: insertAt
                         },
                       bench:
                         {
-                          playerKey: deactivatePlayer.player_key, position: 'BN'}
+                          player_key: deactivatePlayer.player_key, position: 'BN'}
                         }
                       )
           }

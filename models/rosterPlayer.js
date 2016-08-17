@@ -10,7 +10,9 @@ var rosterPlayerSchema = new Schema({
   is_undroppable: String,
   position_type: String,
   eligible_positions: Array,
-  selected_position: String
+  selected_position: String,
+  bye_weeks: String,
+  name: String
 });
 
 var RosterPlayer = mongoose.model('RosterPlayer', rosterPlayerSchema);
