@@ -17,7 +17,14 @@ router.get('/stats/testpromise', stats.testPromise);
 var roster = require('./app/roster');
 router.get('/teams', roster.teams);
 router.get('/roster', roster.index);
-router.get('/allplayers', roster.allPlayers);
-router.get('/editRoster', roster.index, roster.editRoster);
+// router.get('/editRosterOld', roster.index, roster.editRoster);
+// router.get('/editroster', roster.editRosterNew, roster.editRoster);
+router.get('/editroster', roster.editRoster);
+
+
+// player routes
+var players = require('./app/players');
+router.get('/allplayers', players.allPlayers);
+router.get('/player', players.player);
 
 module.exports = router;

@@ -1,4 +1,26 @@
 var _u = require('underscore');
+var config = require('../config');
+var User = require('../models/user');
+var Promise = require('bluebird');
+
+
+User.findOne({_id: "568ef435000ad777555d1c41"}, function(err, user) {
+  TOKEN = user.token;
+  TOKEN_SECRET = user.token_secret;
+  SESSION_HANDLE = user.session_handle;
+});
+
+exports.fetchUser = () => {
+  return Promise.promisify(User.findOne.bind(User))({_id: "568ef435000ad777555d1c41"})
+}
+
+exports.userCreds = (user) => {
+  return { consumer_key: config.consumer_key
+    , consumer_secret: config.consumer_secret
+    , token: user.token 
+    , token_secret: user.token_secret
+  }
+}
 
 exports.translateData = function(data) {
   var finalData = {}
@@ -38,15 +60,22 @@ exports.translateData = function(data) {
 }
 
 
+
 // edit roster and matchplayers are confusing. could def use a rewrite
 exports.editRoster = function(players, callback) {
   var activate = [];
   var deactivate = [];
   _u.each(players, function(player) {
-    if (player['status'] === 'PUP-P' && player.selected_position !== 'BN') {
+    // if (player['status'] === 'PUP-P' && player.selected_position !== 'BN') {
+    //   deactivate.push(player);
+    // }
+    // if (player['status'] !== 'PUP-P' && player.selected_position === 'BN') {
+    //   activate.push(player);
+    // }
+    if (_u.indexOf(['Q'], player['status']) !== -1 && player.selected_position !== 'BN') {
       deactivate.push(player);
     }
-    if (player['status'] !== 'PUP-P' && player.selected_position === 'BN') {
+    if (_u.indexOf(['Q'], player['status']) === -1 && player.selected_position === 'BN') {
       activate.push(player);
     }
   });

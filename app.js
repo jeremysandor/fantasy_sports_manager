@@ -7,7 +7,7 @@ var config = require('./config');
 var Grant = require('grant-express');
 var grant = new Grant(config.grant);
 var CronJob = require('cron').CronJob;
-var roster = require('./app/roster');
+// var roster = require('./app/roster');
 
 
 mongoose.connect('mongodb://localhost/test');
