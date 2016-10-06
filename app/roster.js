@@ -2,6 +2,7 @@
 var request = require('request');
 var User = require('../models/user');
 var RosterPlayer = require('../models/rosterPlayer');
+var Team = require('../models/team');
 var config = require('../config');
 var JSONStream = require('JSONStream');
 var _u = require('underscore');
@@ -20,11 +21,36 @@ exports.teams = function(req, res, next) {
     return utils.userCreds(user)
   })
   .then((oauth) => {
+    var body = '';
     var url = 'http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/teams?format=json';    
-    request.get({url:url, oauth:oauth}, function (e, r, body) {
-      console.log('body', body);
-      res.send(body);
-    })    
+    request
+      .get({url:url, oauth:oauth})
+      .on('error', (err) => {
+        return new Error(err);
+      })
+      // .pipe(JSONStream.parse('fantasy_content.users.*.user.*.games.0.game.*'))
+      .pipe(JSONStream.parse('fantasy_content.users.*.user.*.games.0.game.*.teams.*.team'))
+      .pipe(JSONStream.stringify())
+      .on('data', (data) => {
+        body += data;
+      })
+      .on('end', () => {
+        var data = JSON.parse(body);
+        console.log('data', data);
+
+        
+        var finalData = data[0];
+        console.log('finalData', finalData);
+        console.log('END');
+      })
+      .pipe(res);
+
+    //   .get({url:url, oauth:oauth}, function (e, r, body) {
+    //     console.log('body', body);
+
+
+    //     res.send(body);
+    // })    
   })
 }
 

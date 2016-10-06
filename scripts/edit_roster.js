@@ -2,6 +2,7 @@ var rp = require('request-promise');
 
 var base_url = 'http://localhost'
 
+
 rp({uri: base_url + '/refreshtoken', method: 'POST'})
 .then((res0) => {
   console.log('RES0', res0);
