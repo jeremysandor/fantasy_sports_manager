@@ -13,7 +13,14 @@ var jsontoxml = require('jsontoxml');
 var Promise = require('bluebird');
 
 // for quick dev switching
-var TEAM_KEY = '359.l.355701.t.5'
+// var TEAM_KEY = '359.l.355701.t.5'
+
+exports.fetchteams = (req, res, next) => {
+  Team.find({}, (err, teams) => {
+    console.log('team', teams);
+    res.send(teams);
+  });
+}
 
 exports.teams = function(req, res, next) {
   utils.fetchUser()
@@ -28,7 +35,6 @@ exports.teams = function(req, res, next) {
       .on('error', (err) => {
         return new Error(err);
       })
-      // .pipe(JSONStream.parse('fantasy_content.users.*.user.*.games.0.game.*'))
       .pipe(JSONStream.parse('fantasy_content.users.*.user.*.games.0.game.*.teams.*.team'))
       .pipe(JSONStream.stringify())
       .on('data', (data) => {
@@ -36,21 +42,14 @@ exports.teams = function(req, res, next) {
       })
       .on('end', () => {
         var data = JSON.parse(body);
-        console.log('data', data);
-
-        
-        var finalData = data[0];
-        console.log('finalData', finalData);
-        console.log('END');
+        data.forEach(function(elem, index) {
+          var finalData = utils.translateTeams(elem);
+          Team.remove({}, () => {});
+          var team = new Team(finalData);
+          team.save();
+        });
       })
-      .pipe(res);
-
-    //   .get({url:url, oauth:oauth}, function (e, r, body) {
-    //     console.log('body', body);
-
-
-    //     res.send(body);
-    // })    
+      .pipe(res);    
   })
 }
 
@@ -61,8 +60,10 @@ exports.index = function(req, res, next) {
     return utils.userCreds(user)
   })
   .then((oauth) => {
+    var teamKey = req.body.team_key
+    console.log('INDEX TEAMKEY', teamKey)
     var body = ''
-    var url = 'http://fantasysports.yahooapis.com/fantasy/v2/team/' + TEAM_KEY + '/roster?format=json'
+    var url = 'http://fantasysports.yahooapis.com/fantasy/v2/team/' + teamKey + '/roster?format=json'
     request
       .get({url:url, oauth:oauth})
       .on('error', function (err) {
@@ -77,9 +78,14 @@ exports.index = function(req, res, next) {
         var data = JSON.parse(body);
         data.forEach(function(elem, index) {
           var finalData = utils.translateData(elem);
-          RosterPlayer.remove({}, function() {});
-          var rosterPlayer = new RosterPlayer(finalData);
-          rosterPlayer.save();
+          if (finalData) {
+            finalData['team_key'] = teamKey;  
+            // this needs to go. update each player 
+            // rather than removing the 
+            // RosterPlayer.remove({}, function() {});
+            var rosterPlayer = new RosterPlayer(finalData);
+            rosterPlayer.save();
+          }
         });
       })
       .pipe(res);
@@ -90,10 +96,11 @@ exports.index = function(req, res, next) {
 
 exports.editRoster = function(req, res, next) {
   var swap = {}
-
-  RosterPlayer.find({}, function(err, players) {
+  var teamKey = req.body.team_key;
+  console.log('REQ.body', req.body);
+  RosterPlayer.find({'team_key': teamKey}, function(err, players) {
     swaps = utils.editRoster(players, utils.matchPlayers);
-    var playerList = []
+    var playerList = [];
     _u.each(swaps, function(swap) {
       _u.each(swap, function(val, key) {
         console.log('VAL', val);     
@@ -101,7 +108,8 @@ exports.editRoster = function(req, res, next) {
       })
     });
 
-    var xml = jsontoxml({fantasy_content: {roster: {coverage_type: 'week', week: 5, players: playerList}}}, xmlHeader="true");
+    var week = req.body.week; 
+    var xml = jsontoxml({fantasy_content: {roster: {coverage_type: 'week', week: week, players: playerList}}}, xmlHeader="true");
     console.log('xml', xml);
 
     if (swaps.length > 0) {
@@ -112,7 +120,7 @@ exports.editRoster = function(req, res, next) {
       .then((oauth) => {
         var body = xml;
         var headers = {'Content-Type': 'application/xml'};
-        var url = 'http://fantasysports.yahooapis.com/fantasy/v2/team/' + TEAM_KEY + '/roster'
+        var url = 'http://fantasysports.yahooapis.com/fantasy/v2/team/' + teamKey + '/roster'
         request.put({url:url, oauth:oauth, headers: headers, body:body}, function(e, r, body) {
           res.send(body);
           // console.log('success')
@@ -120,7 +128,7 @@ exports.editRoster = function(req, res, next) {
       })
     }
     else {
-      res.send('Roster is already optimized \n');
+      res.send(teamKey + 'Roster is already optimized \n' );
     }
   });
 }

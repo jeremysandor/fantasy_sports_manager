@@ -5,8 +5,10 @@ var routes = require('./routes');
 var session = require('express-session');
 var config = require('./config');
 var Grant = require('grant-express');
+var bodyParser = require('body-parser');
 var grant = new Grant(config.grant);
 var CronJob = require('cron').CronJob;
+
 // var roster = require('./app/roster');
 
 
@@ -17,6 +19,7 @@ db.once('open', function(callback) {console.log('database open')});
 var app = express();
 app.use(session({secret: 'grant'}));
 app.use(grant);
+app.use(bodyParser.json());
 app.use('/', routes);
 
 var server = app.listen(80, function() {

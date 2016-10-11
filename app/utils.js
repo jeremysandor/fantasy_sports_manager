@@ -22,40 +22,64 @@ exports.userCreds = (user) => {
   }
 }
 
-exports.translateData = function(data) {
-  var finalData = {}
-  _u.each(data, function(v, k) {
-    _u.each(v[0], function(elem) {
-      _u.each(elem, function(val, key) {
-        if (key === 'eligible_positions') {
-          positions = [];
-          _u.each(val, function(position) {
-            positions.push(position.position);
-          });
-          finalData[key] = positions;
-        };
-        if (key === 'bye_weeks') {
-          console.log('got the bye week', val)
-          finalData[key] = val.week;
-        };
-        if (key === 'name') {
-          finalData[key] = val.full
-        };
-        if (['bye_weeks', 'name', 'headshot', 'image_url', 'has_player_notes', 'eligible_positions'].indexOf(key) === -1) {
-          finalData[key] = val;
+exports.translateTeams = (data) => {
+  // console.log('DATA', data);
+  var finalData = {};
+  data.forEach((elem, i) => {
+    // console.log('ELEM', elem);
+    if (elem) {
+      elem.forEach((item, j) => {
+        if (item.constructor == Object) {
+          console.log('ITEM', item);  
+          _u.each(item, (v, k) => {
+            console.log('K', k);
+            console.log('V', v);
+            finalData[k] = v;
+          })
         }
-      });
-    });
-
-    // set current position
-    _u.each(v[1], function(val, key) {
-      finalData[key] = val[1].position;
-    });
-
+      });  
+    }
   });
-  console.log('finalData', finalData)
-  if (_u.isEmpty(finalData) === false) {
-    return finalData
+  return finalData;
+}
+
+exports.translateData = function(data) {
+  console.log('translateData', data)
+  if (data.constructor == Object) {
+    var finalData = {};
+    _u.each(data, function(v, k) {
+      _u.each(v[0], function(elem) {
+        _u.each(elem, function(val, key) {
+          if (key === 'eligible_positions') {
+            positions = [];
+            _u.each(val, function(position) {
+              positions.push(position.position);
+            });
+            finalData[key] = positions;
+          };
+          if (key === 'bye_weeks') {
+            console.log('got the bye week', val)
+            finalData[key] = val.week;
+          };
+          if (key === 'name') {
+            finalData[key] = val.full
+          };
+          if (['bye_weeks', 'name', 'headshot', 'image_url', 'has_player_notes', 'eligible_positions'].indexOf(key) === -1) {
+            finalData[key] = val;
+          }
+        });
+      });
+
+      // set current position
+      _u.each(v[1], function(val, key) {
+        finalData[key] = val[1].position;
+      });
+
+    });
+    console.log('finalData', finalData)
+    if (_u.isEmpty(finalData) === false) {
+      return finalData
+    }
   }
 }
 

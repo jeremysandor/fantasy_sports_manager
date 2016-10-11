@@ -15,11 +15,12 @@ router.get('/stats/testpromise', stats.testPromise);
 
 // roster routes
 var roster = require('./app/roster');
-router.get('/teams', roster.teams);
-router.get('/roster', roster.index);
+router.get('/teams', roster.fetchteams);
+router.put('/teams', roster.teams);
+router.put('/roster', roster.index);
 // router.get('/editRosterOld', roster.index, roster.editRoster);
 // router.get('/editroster', roster.editRosterNew, roster.editRoster);
-router.get('/editroster', roster.editRoster);
+router.put('/editroster', roster.editRoster);
 
 
 // player routes
