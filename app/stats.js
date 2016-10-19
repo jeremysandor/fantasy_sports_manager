@@ -5,47 +5,49 @@ var Promise = require('bluebird');
 var _u = require('underscore');
 var crypto = require('crypto');
 
+
+
+exports.projection = (req, res, next) => {
+  var week = req.body.week;
+  console.log('PUT projection body', req.body);
+
+  // http://www.fftoday.com/rankings/playerwkproj.php?Season=2016&GameWeek=6&PosID=10
+
+  var pos_id = [req.body.position]
+  var page = 0;
+  var projections = () => {
+    return Promise.map(pos_id, (pos_id) => {
+      return Promise.promisify(xray('http://www.fftoday.com/rankings/playerwkproj.php?' + '&order_by=FFPts&sort_order=DESC&Season=' + 2016 + '&GameWeek=' + week + '&PosID=' + pos_id + '&cur_page=' + page, '[bgcolor="#eeeeee"]', ['.bodycontent']))()
+    })
+    .then((content) => {
+      // console.log('content', content);
+      content.forEach((elem, i) => {
+        console.log('elem', elem);
+        if (elem.length) {
+          console.log('elem.length')
+          page += 1;
+          projections();
+        }
+        else {
+          console.log('no elem length')
+          res.send('finished');
+        }
+      })
+    })  
+  }
+
+  projections();
+  
+
+
+}
+
+
+
+
 YEAR = [2015, 2014]
 WEEK = [1,2,3]
 POSITION = ['QB', 'RB']
-
-// var playerTransform = function (playerWeek) {
-//   console.log('playerWeek', playerWeek);
-//   if (playerWeek.length) {
-
-//   }
-//   return playerWeek
-// }
-
-exports.fetchHistorical = function(req, res, next) {
-  qs = []
-  _u.each(YEAR, function(year) {
-    _u.each(WEEK, function(week) {
-      _u.each(POSITION, function(position) {
-        qs.push('?pos=' + position + '&yr=' + year + '&wk=' + week)
-      })
-    });
-  });
-
-
-  console.log('QS', qs)
-  _u.each(qs, function(qs) {
-    xray('http://www.footballdb.com/fantasy-football/index.html' + qs, '.statistics', ['td'])(function(err, content) {
-      
-      // var playerWeeks = []
-
-      if (content) {
-
-        var spliced = content.splice(0, 6)
-        // console.log('spliced', spliced)
-        // console.log('content', content.length);
-      }
-      
-      console.log('allStats', allStats)
-      // res.send(content);
-    });
-  });
-}
 
 
 exports.testPromise = (req, res, next) => {
@@ -114,4 +116,42 @@ exports.testPromise = (req, res, next) => {
 
 
 
+
+// var playerTransform = function (playerWeek) {
+//   console.log('playerWeek', playerWeek);
+//   if (playerWeek.length) {
+
+//   }
+//   return playerWeek
+// }
+
+exports.fetchHistorical = function(req, res, next) {
+  qs = []
+  _u.each(YEAR, function(year) {
+    _u.each(WEEK, function(week) {
+      _u.each(POSITION, function(position) {
+        qs.push('?pos=' + position + '&yr=' + year + '&wk=' + week)
+      })
+    });
+  });
+
+
+  console.log('QS', qs)
+  _u.each(qs, function(qs) {
+    xray('http://www.footballdb.com/fantasy-football/index.html' + qs, '.statistics', ['td'])(function(err, content) {
+      
+      // var playerWeeks = []
+
+      if (content) {
+
+        var spliced = content.splice(0, 6)
+        // console.log('spliced', spliced)
+        // console.log('content', content.length);
+      }
+      
+      console.log('allStats', allStats)
+      // res.send(content);
+    });
+  });
+}
 

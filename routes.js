@@ -10,6 +10,7 @@ router.post('/refreshtoken', auth.refreshToken);
 
 // stats
 var stats = require('./app/stats');
+router.put('/projections', stats.projection);
 router.get('/scrape/stats/historical', stats.fetchHistorical);
 router.get('/stats/testpromise', stats.testPromise);
 

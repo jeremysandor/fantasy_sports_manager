@@ -22,9 +22,11 @@ app.use(grant);
 app.use(bodyParser.json());
 app.use('/', routes);
 
-var server = app.listen(80, function() {
-  var host = server.address().address;
+var server = app.listen(80, 'localhost', function() {
   var port = server.address().port;
+  var host = server.address().address;
+  // console.log('process.env.NODE_ENV, process.env.HOST', process.env, process.env.HOST)
+  // console.log('server', server.address())
   console.log('Example app listening at:', host, port);
 });
 

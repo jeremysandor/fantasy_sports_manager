@@ -12,16 +12,17 @@ db.once('open', function(callback) {console.log('database open')});
 //
 var base_url = 'http://localhost'
 
+// start with fresh RosterPlayer collection 
+RosterPlayer.remove({}, function(err, removed) {console.log('removed', removed)} );
 
+// refresh token, fetch teams, fetch roster, edit roster
 rp({uri: base_url + '/refreshtoken', method: 'POST'})
 .then((res0) => {
   console.log('RES0', res0);
-  console.log('RosterPlayer', RosterPlayer)
-  RosterPlayer.remove({}, function() {});
-
-  return rp({uri: base_url + '/teams', method: 'PUT'});
+  return rp({uri: base_url + '/teams', method: 'PUT'});    
 })
 .then((res1) => {
+  console.log('res1', res1);
   return rp({uri: base_url + '/teams'});
 })
 .then((res2) => {
