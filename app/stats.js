@@ -4,18 +4,42 @@ var xray = Xray();
 var Promise = require('bluebird');
 var _u = require('underscore');
 var crypto = require('crypto');
+var PlayerPredition = require('../models/playerPrediction');
 
-
+var positionObj = {
+  '10': 'QB',
+  '20': 'RB',
+  '30': 'WR',
+  '40': 'TE'
+}
 
 exports.projection = (req, res, next) => {
   var week = req.body.week;
+  var position = req.body.position;
   console.log('PUT projection body', req.body);
 
   // http://www.fftoday.com/rankings/playerwkproj.php?Season=2016&GameWeek=6&PosID=10
 
-  var pos_id = [req.body.position]
+  var translateData = (projectionData, position, week) => {
+    console.log('projectionData', projectionData)
+    var name = projectionData[1].trim()
+    console.log('name', name);
+    var playerId = crypto.createHash('md5').update(name + position).digest('hex');   // fullName + position
+
+    var projectionObj = {};
+    projectionObj.checksum = playerId;
+    projectionObj.name = name;
+    projectionObj.position = position;
+    projectionObj.week = week;
+    projectionObj.projection = projectionData[projectionData.length - 1]
+    // console.log('projectionObj', projectionObj);
+    return projectionObj;
+  }
+
+  
   var page = 0;
-  var projections = () => {
+  var projections = (week, position) => {
+    var pos_id = [position]  
     return Promise.map(pos_id, (pos_id) => {
       return Promise.promisify(xray('http://www.fftoday.com/rankings/playerwkproj.php?' + '&order_by=FFPts&sort_order=DESC&Season=' + 2016 + '&GameWeek=' + week + '&PosID=' + pos_id + '&cur_page=' + page, '[bgcolor="#eeeeee"]', ['.bodycontent']))()
     })
@@ -25,6 +49,62 @@ exports.projection = (req, res, next) => {
         console.log('elem', elem);
         if (elem.length) {
           console.log('elem.length')
+          elem.forEach((item, j) => {
+            console.log('position ID', position)
+            console.log('week', week)
+            // var projectionData = []
+            if (position === 10) {
+              var projectionData = elem.splice(0, 13);
+              // console.log('projectionData', projectionData);
+              var positionString = positionObj[(position).toString()]
+              // console.log('positionString', positionString);
+              var finalprojectionObj = translateData(projectionData, positionString, week);
+              // console.log('final projectionObj', finalprojectionObj);
+
+              PlayerPredition.findOneAndUpdate({'checksum': finalprojectionObj.checksum, 'week': week}, {$set: finalprojectionObj}, {upsert: true}, (err, doc) => {
+                console.log('ERR 10', err);
+                console.log('DOC 10', doc);
+              });
+            }
+            if (position === 20) {
+              var projectionData = elem.splice(0, 11)
+              // console.log('projectionData', projectionData);
+              var positionString = positionObj[(position).toString()]
+              var finalprojectionObj = translateData(projectionData, positionString, week);
+              // console.log('final projectionObj', finalprojectionObj);
+              PlayerPredition.findOneAndUpdate({'checksum': finalprojectionObj.checksum, 'week': week}, {$set: finalprojectionObj}, {upsert: true}, (err, doc) => {
+                console.log('ERR 20', err);
+                console.log('DOC 20', doc);
+              });
+            }
+            if (position === 30) {
+              var projectionData = elem.splice(0, 8)
+              // console.log('projectionData', projectionData);
+              var positionString = positionObj[(position).toString()]
+              var finalprojectionObj = translateData(projectionData, positionString, week);
+              console.log('final projectionObj', finalprojectionObj);
+              PlayerPredition.findOneAndUpdate({'checksum': finalprojectionObj.checksum, 'week': week}, {$set: finalprojectionObj}, {upsert: true}, (err, doc) => {
+                console.log('ERR 30', err);
+                console.log('DOC 30', doc);
+              });
+            }
+            if (position === 40) {
+              var projectionData = elem.splice(0, 8)
+              // console.log('projectionData', projectionData);
+              var positionString = positionObj[(position).toString()]
+              var finalprojectionObj = translateData(projectionData, positionString, week);
+              console.log('final projectionObj', finalprojectionObj);
+              PlayerPredition.findOneAndUpdate({'checksum': finalprojectionObj.checksum, 'week': week}, {$set: finalprojectionObj}, {upsert: true}, (err, doc) => {
+                console.log('ERR 40', err);
+                console.log('DOC 40', doc);
+              });
+            }
+            
+            
+          })
+          
+          
+
           page += 1;
           projections();
         }
@@ -36,7 +116,7 @@ exports.projection = (req, res, next) => {
     })  
   }
 
-  projections();
+  projections(week, position);
   
 
 

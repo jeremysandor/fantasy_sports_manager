@@ -99,6 +99,8 @@ exports.editRoster = function(req, res, next) {
   var teamKey = req.body.team_key;
   console.log('REQ.body', req.body);
   RosterPlayer.find({'team_key': teamKey}, function(err, players) {
+    console.log('WTF PLAYERS', players);
+    console.log('ERR', err);
     swaps = utils.editRoster(players, utils.matchPlayers);
     var playerList = [];
     _u.each(swaps, function(swap) {

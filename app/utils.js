@@ -30,10 +30,10 @@ exports.translateTeams = (data) => {
     if (elem) {
       elem.forEach((item, j) => {
         if (item.constructor == Object) {
-          console.log('ITEM', item);  
+          // console.log('ITEM', item);  
           _u.each(item, (v, k) => {
-            console.log('K', k);
-            console.log('V', v);
+            // console.log('K', k);
+            // console.log('V', v);
             finalData[k] = v;
           })
         }
@@ -87,9 +87,11 @@ exports.translateData = function(data) {
 
 // edit roster and matchplayers are confusing. could def use a rewrite
 exports.editRoster = function(players, callback) {
+  console.log('ROSTER PLAYERS', players)
   var activate = [];
   var deactivate = [];
   _u.each(players, function(player) {
+    console.log('ROSTER PLAYER', player)
     // if (player['status'] === 'PUP-P' && player.selected_position !== 'BN') {
     //   deactivate.push(player);
     // }

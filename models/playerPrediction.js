@@ -5,7 +5,8 @@ var playerPredictionSchema = new Schema({
   checksum: String,
   name: String,
   position: String,
-  projection: Object
+  week: Number,
+  projection: String
 });
 
 var PlayerPrediction = mongoose.model('PlayerPrediction', playerPredictionSchema);

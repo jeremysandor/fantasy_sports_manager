@@ -13,10 +13,14 @@ db.once('open', function(callback) {console.log('database open')});
 var base_url = 'http://localhost'
 
 // start with fresh RosterPlayer collection 
-RosterPlayer.remove({}, function(err, removed) {console.log('removed', removed)} );
+// RosterPlayer.remove({}, function(err, removed) {console.log('removed', removed)} );
+// return Promise.promisify(User.findOne.bind(User))({_id: "568ef435000ad777555d1c41"})
 
 // refresh token, fetch teams, fetch roster, edit roster
 rp({uri: base_url + '/refreshtoken', method: 'POST'})
+// .then((res) => {
+//   return Promise.promisify(RosterPlayer.findOne.bind(RosterPlayer))({})
+// })
 .then((res0) => {
   console.log('RES0', res0);
   return rp({uri: base_url + '/teams', method: 'PUT'});    
