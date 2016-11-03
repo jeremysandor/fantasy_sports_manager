@@ -2,6 +2,7 @@ var _u = require('underscore');
 var config = require('../config');
 var User = require('../models/user');
 var Promise = require('bluebird');
+var crypto = require('crypto');
 
 
 User.findOne({_id: "568ef435000ad777555d1c41"}, function(err, user) {
@@ -44,7 +45,7 @@ exports.translateTeams = (data) => {
 }
 
 exports.translateData = function(data) {
-  console.log('translateData', data)
+  // console.log('translateData', JSON.stringify(data, null, 2))
   if (data.constructor == Object) {
     var finalData = {};
     _u.each(data, function(v, k) {
@@ -67,7 +68,7 @@ exports.translateData = function(data) {
           if (['bye_weeks', 'name', 'headshot', 'image_url', 'has_player_notes', 'eligible_positions'].indexOf(key) === -1) {
             finalData[key] = val;
           }
-        });
+        });        
       });
 
       // set current position
@@ -78,6 +79,7 @@ exports.translateData = function(data) {
     });
     console.log('finalData', finalData)
     if (_u.isEmpty(finalData) === false) {
+      finalData['checksum'] = crypto.createHash('md5').update(finalData['name'] + finalData['display_position']).digest('hex');   // fullName + position
       return finalData
     }
   }
