@@ -78,13 +78,23 @@ exports.index = function(req, res, next) {
         var data = JSON.parse(body);
         data.forEach(function(elem, index) {
           var finalData = utils.translateData(elem);
+          // console.log('finalData', finalData);
           if (finalData) {
             finalData['team_key'] = teamKey;  
             // this needs to go. update each player 
             // rather than removing the 
             // RosterPlayer.remove({}, function() {});
-            var rosterPlayer = new RosterPlayer(finalData);
-            rosterPlayer.save();
+            // var rosterPlayer = new RosterPlayer(finalData);
+            // rosterPlayer.save();
+            RosterPlayer.findOneAndUpdate({'checksum': finalData.checksum, 'team_key': finalData.team_key}, {$set: finalData}, {upsert: true}, (err, doc) => {
+              // console.log('err', err);
+              // console.log('doc', doc);
+            })
+
+            // PlayerPredition.findOneAndUpdate({'checksum': finalprojectionObj.checksum, 'week': week}, {$set: finalprojectionObj}, {upsert: true}, (err, doc) => {
+            //     console.log('ERR 40', err);
+            //     console.log('DOC 40', doc);
+            //   });
           }
         });
       })
@@ -94,45 +104,101 @@ exports.index = function(req, res, next) {
 
 
 
-exports.editRoster = function(req, res, next) {
-  var swap = {}
-  var teamKey = req.body.team_key;
-  console.log('REQ.body', req.body);
-  RosterPlayer.find({'team_key': teamKey}, function(err, players) {
-    console.log('WTF PLAYERS', players);
-    console.log('ERR', err);
-    swaps = utils.editRoster(players, utils.matchPlayers);
-    var playerList = [];
-    _u.each(swaps, function(swap) {
-      _u.each(swap, function(val, key) {
-        console.log('VAL', val);     
-        playerList.push({player: val});   
-      })
-    });
+// exports.editRoster = function(req, res, next) {
+//   var swap = {}
+//   var teamKey = req.body.team_key;
+//   console.log('REQ.body', req.body);
+//   RosterPlayer.find({'team_key': teamKey}, function(err, players) {
+//     console.log('WTF PLAYERS', players);
+//     console.log('ERR', err);
+//     swaps = utils.editRoster(players, utils.matchPlayers);
+//     var playerList = [];
+//     _u.each(swaps, function(swap) {
+//       _u.each(swap, function(val, key) {
+//         console.log('VAL', val);     
+//         playerList.push({player: val});   
+//       })
+//     });
 
-    var week = req.body.week; 
-    var xml = jsontoxml({fantasy_content: {roster: {coverage_type: 'week', week: week, players: playerList}}}, xmlHeader="true");
-    console.log('xml', xml);
+//     console.log('player LIST', playerList)
+//     // player LIST [ { player: { player_key: '359.p.24916', position: 'TE' } },
+//     // { player: { player_key: '359.p.24070', position: 'BN' } } ]  
+//     var week = req.body.week; 
+//     var xml = jsontoxml({fantasy_content: {roster: {coverage_type: 'week', week: week, players: playerList}}}, xmlHeader="true");
+//     console.log('xml', xml);
 
-    if (swaps.length > 0) {
-      utils.fetchUser()
-      .then((user) => {
-        return utils.userCreds(user)
-      })
-      .then((oauth) => {
-        var body = xml;
-        var headers = {'Content-Type': 'application/xml'};
-        var url = 'http://fantasysports.yahooapis.com/fantasy/v2/team/' + teamKey + '/roster'
-        request.put({url:url, oauth:oauth, headers: headers, body:body}, function(e, r, body) {
-          res.send(body);
-          // console.log('success')
-        });        
-      })
-    }
-    else {
-      res.send(teamKey + 'Roster is already optimized \n' );
+//     if (swaps.length > 0) {
+//       utils.fetchUser()
+//       .then((user) => {
+//         return utils.userCreds(user)
+//       })
+//       .then((oauth) => {
+//         var body = xml;
+//         var headers = {'Content-Type': 'application/xml'};
+//         var url = 'http://fantasysports.yahooapis.com/fantasy/v2/team/' + teamKey + '/roster'
+//         request.put({url:url, oauth:oauth, headers: headers, body:body}, function(e, r, body) {
+//           res.send(body);
+//           // console.log('success')
+//         });        
+//       })
+//     }
+//     else {
+//       res.send(teamKey + 'Roster is already optimized \n' );
+//     }
+//   });
+// }
+
+var swapPlayers = (players) => {
+  // filter by position
+  var qbs = players.filter((player) => {return _u.indexOf(player['eligible_positions'], 'QB') !== -1})
+  var wrs = players.filter((player) => {return _u.indexOf(player['eligible_positions'], 'WR') !== -1})
+  var rbs = players.filter((player) => {return _u.indexOf(player['eligible_positions'], 'RB') !== -1})
+  var tes = players.filter((player) => {return _u.indexOf(player['eligible_positions'], 'TE') !== -1})
+
+  // sort player positions by projected points
+  var sortedQbs = _u.sortBy(qbs, (w) => {return - w.projection})
+  var sortedWrs = _u.sortBy(wrs, (w) => {return - w.projection})
+  var sortedRbs = _u.sortBy(rbs, (w) => {return - w.projection})
+  var sortedTes = _u.sortBy(tes, (w) => {return - w.projection})
+
+  console.log('QBS', qbs);
+  console.log('WRS', wrs);
+  console.log('sortedWrs', sortedWrs);
+  
+  // determine available slots by position
+  var availableWrSlots = 0;
+  wrs.map((wr) => {if (wr.selected_position === 'WR') {availableWrSlots += 1;}});
+  console.log('availableWrSlots', availableWrSlots);
+
+
+  // should we map or filter here...
+  var swapWrs = sortedWrs.filter((player, index) => {
+    if (index < availableWrSlots) {
+      if (player.selected_position === 'BN') {
+        // activate player
+        console.log('this player should be activated:', player.name);
+        return player.name;
+      }
     }
   });
+
+  console.log('swapWrs', swapWrs);
+
+  return players;
+}
+
+exports.editRoster = (req, res, next) => {
+  var teamKey = req.body.team_key;
+  var week = req.body.week;
+  RosterPlayer.find({'team_key': teamKey}, (err, players) => {
+    if (players) {
+      var swaps = swapPlayers(players);  
+      // console.log('swaps', swaps);
+    }
+    else if (err) {
+      throw new Error('no good!');
+    }
+  })
 }
 
 

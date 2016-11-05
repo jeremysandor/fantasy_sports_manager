@@ -18,8 +18,8 @@ rp({uri: base_url + '/refreshtoken', method: 'POST'})
   console.log('parseteam', parseteam);
   var week = parseteam[0].roster_adds.coverage_value;
   return Promise.map([10, 20, 30, 40], (position) => {
-    return rp({uri: base_url + "/projections", method: "PUT", body: {week: 6, position: position}, json: true} )  
-    // return rp({uri: base_url + "/projections", method: "PUT", body: {week: week, position: position}, json: true} )  
+    // return rp({uri: base_url + "/projections", method: "PUT", body: {week: 6, position: position}, json: true} )  
+    return rp({uri: base_url + "/projections", method: "PUT", body: {week: week, position: position}, json: true} )  
   })
   
 })

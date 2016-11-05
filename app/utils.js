@@ -59,7 +59,7 @@ exports.translateData = function(data) {
             finalData[key] = positions;
           };
           if (key === 'bye_weeks') {
-            console.log('got the bye week', val)
+            // console.log('got the bye week', val)
             finalData[key] = val.week;
           };
           if (key === 'name') {
@@ -77,7 +77,7 @@ exports.translateData = function(data) {
       });
 
     });
-    console.log('finalData', finalData)
+    // console.log('finalData', finalData)
     if (_u.isEmpty(finalData) === false) {
       finalData['checksum'] = crypto.createHash('md5').update(finalData['name'] + finalData['display_position']).digest('hex');   // fullName + position
       return finalData

@@ -5,6 +5,7 @@ var Promise = require('bluebird');
 var _u = require('underscore');
 var crypto = require('crypto');
 var PlayerPredition = require('../models/playerPrediction');
+var RosterPlayer = require('../models/rosterPlayer');
 
 var positionObj = {
   '10': 'QB',
@@ -31,7 +32,7 @@ exports.projection = (req, res, next) => {
     projectionObj.name = name;
     projectionObj.position = position;
     projectionObj.week = week;
-    projectionObj.projection = projectionData[projectionData.length - 1]
+    projectionObj.projection = parseFloat(projectionData[projectionData.length - 1]).toFixed(2)
     // console.log('projectionObj', projectionObj);
     return projectionObj;
   }
@@ -65,6 +66,12 @@ exports.projection = (req, res, next) => {
                 console.log('ERR 10', err);
                 console.log('DOC 10', doc);
               });
+
+              var projection = finalprojectionObj.projection || 0
+              RosterPlayer.findOneAndUpdate({'checksum': finalprojectionObj.checksum}, {$set: {'projection': projection} }, (err, doc) => {
+                console.log('Err', err);
+                console.log('DOC', doc)
+              });
             }
             if (position === 20) {
               var projectionData = elem.splice(0, 11)
@@ -75,6 +82,12 @@ exports.projection = (req, res, next) => {
               PlayerPredition.findOneAndUpdate({'checksum': finalprojectionObj.checksum, 'week': week}, {$set: finalprojectionObj}, {upsert: true}, (err, doc) => {
                 console.log('ERR 20', err);
                 console.log('DOC 20', doc);
+              });
+              var projection = finalprojectionObj.projection || 0
+
+              RosterPlayer.findOneAndUpdate({'checksum': finalprojectionObj.checksum}, {$set: {'projection': projection} }, (err, doc) => {
+                console.log('Err', err);
+                console.log('DOC', doc)
               });
             }
             if (position === 30) {
@@ -87,6 +100,11 @@ exports.projection = (req, res, next) => {
                 console.log('ERR 30', err);
                 console.log('DOC 30', doc);
               });
+              var projection = finalprojectionObj.projection || 0
+              RosterPlayer.findOneAndUpdate({'checksum': finalprojectionObj.checksum}, {$set: {'projection': projection} }, (err, doc) => {
+                console.log('Err', err);
+                console.log('DOC', doc)
+              });              
             }
             if (position === 40) {
               var projectionData = elem.splice(0, 8)
@@ -98,6 +116,11 @@ exports.projection = (req, res, next) => {
                 console.log('ERR 40', err);
                 console.log('DOC 40', doc);
               });
+              var projection = finalprojectionObj.projection || 0
+              RosterPlayer.findOneAndUpdate({'checksum': finalprojectionObj.checksum}, {$set: {'projection': projection} }, (err, doc) => {
+                console.log('Err', err);
+                console.log('DOC', doc)
+              });              
             }
             
             

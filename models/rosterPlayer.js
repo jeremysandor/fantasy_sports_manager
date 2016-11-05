@@ -3,6 +3,7 @@ var Schema = mongoose.Schema;
 
 var rosterPlayerSchema = new Schema({
   checksum: String,
+  projection: { type: Number, default: 0 },
   team_key: String,
   player_key: String,
   player_id: String,
