@@ -154,18 +154,25 @@ var swapPlayers = (players) => {
   var wrs = players.filter((player) => {return _u.indexOf(player['eligible_positions'], 'WR') !== -1})
   var rbs = players.filter((player) => {return _u.indexOf(player['eligible_positions'], 'RB') !== -1})
   var tes = players.filter((player) => {return _u.indexOf(player['eligible_positions'], 'TE') !== -1})
-
+  var flex = players.filter((player) => {return _u.indexOf(player['eligible_positions'], 'W/R/T') !== -1})
+  
   // sort player positions by projected points in decending order
   var sortedQbs = _u.sortBy(qbs, (w) => {return - w.projection})
   var sortedWrs = _u.sortBy(wrs, (w) => {return - w.projection})
   var sortedRbs = _u.sortBy(rbs, (w) => {return - w.projection})
   var sortedTes = _u.sortBy(tes, (w) => {return - w.projection})
+  var sortedFlex = _u.sortBy(flex, (w) => {return - w.projection})
+
+  console.log('sortedFlex', sortedFlex);
 
   // determine available slots by position
   var availableQbSlots = qbs.filter((p) => {return p.selected_position === 'QB'});
   var availableWrSlots = wrs.filter((p) => {return p.selected_position === 'WR'});
   var availableRbSlots = rbs.filter((p) => {return p.selected_position === 'RB'});
   var availableTeSlots = tes.filter((p) => {return p.selected_position === 'TE'});
+  var availableFlexSlots = tes.filter((p) => {return p.selected_position === 'W/R/T'});
+
+  console.log('availableWrSlots', availableWrSlots);
 
 
   var swapQbsIn = sortedQbs.filter((player, index) => {
@@ -181,13 +188,11 @@ var swapPlayers = (players) => {
   var swapQbsOut = sortedQbs.filter((player, index) => {
     if (index >= availableQbSlots.length) {
       if (player.selected_position === 'QB') {
-        // return player to activate
         console.log('this player should be dectivated:', player.name);
         return true;
       }
     }
   });
-
 
   var swapWrsIn = sortedWrs.filter((player, index) => {
     if (index < availableWrSlots.length) {
@@ -208,13 +213,88 @@ var swapPlayers = (players) => {
     }
   });
 
-  console.log('swapWrsIn', swapWrsIn);
-  console.log('swapWrsOut', swapWrsOut);
-  
-  console.log('swapQbsIn', swapQbsIn);
-  console.log('swapQbsOut', swapQbsOut);
+  var swapRbsIn = sortedRbs.filter((player, index) => {
+    if (index < availableRbSlots.length) {
+      if (player.selected_position === 'BN') {
+        // return player to activate
+        console.log('this player should be activated:', player.name);
+        return true;
+      }
+    }
+  });
 
+  var swapRbsOut = sortedRbs.filter((player, index) => {
+    if (index >= availableRbSlots.length) {
+      if (player.selected_position === 'RB') {
+        console.log('this player should be deactivated', player.name);
+        return true;
+      }
+    }
+  });
+
+  var swapTesIn = sortedTes.filter((player, index) => {
+    if (index < availableTeSlots.length) {
+      if (player.selected_position === 'BN') {
+        // return player to activate
+        console.log('this player should be activated:', player.name);
+        return true;
+      }
+    }
+  });
+
+  var swapTesOut = sortedTes.filter((player, index) => {
+    if (index >= availableTeSlots.length) {
+      if (player.selected_position === 'RB') {
+        console.log('this player should be deactivated', player.name);
+        return true;
+      }
+    }
+  });
+
+  var swapFlexIn = sortedFlex.filter((player, index) => {
+    if (index < availableFlexSlots.length) {
+      if (player.selected_position === 'BN') {
+        // return player to activate
+        console.log('this player should be activated:', player.name);
+        return true;
+      }
+    }
+  });
+
+  var swapFlexOut = sortedFlex.filter((player, index) => {
+    if (index >= availableFlexSlots.length) {
+      if (player.selected_position === 'W/R/T') {
+        console.log('this player should be deactivated', player.name);
+        return true;
+      }
+    }
+  });
   
+  // console.log('swapWrsIn', swapWrsIn);
+  // console.log('swapWrsOut', swapWrsOut);
+  
+  // console.log('swapQbsIn', swapQbsIn);
+  // console.log('swapQbsOut', swapQbsOut);
+ 
+  var translateQbsIn = swapQbsIn.map((p) => {return { player: { player_key: p.player_key, position: 'QB' } }});
+  var translateQbsOut = swapQbsOut.map((p) => {return { player: { player_key: p.player_key, position: 'BN' } }});
+  var translateWrsIn = swapWrsIn.map((p) => {return { player: { player_key: p.player_key, position: 'WR' } }});
+  var translateWrsOut = swapWrsOut.map((p) => {return { player: { player_key: p.player_key, position: 'BN' } }});
+  var translateRbsIn = swapRbsIn.map((p) => {return { player: { player_key: p.player_key, position: 'RB' } }});
+  var translateRbsOut = swapRbsOut.map((p) => {return { player: { player_key: p.player_key, position: 'BN' } }});
+  var translateTesIn = swapTesIn.map((p) => {return { player: { player_key: p.player_key, position: 'TE' } }});
+  var translateTesOut = swapTesOut.map((p) => {return { player: { player_key: p.player_key, position: 'BN' } }});  
+
+
+
+  console.log('translateWrsIn', translateWrsIn);
+  console.log('translateWrsOut', translateWrsOut);
+  console.log('translateQbsIn', translateQbsIn);
+  console.log('translateQbsOut', translateQbsOut);
+  console.log('translateRbsIn', translateRbsIn);
+  console.log('translateRbsOut', translateRbsOut);
+  console.log('translateTesIn', translateTesIn);
+  console.log('translateTesOut', translateTesOut);
 
   return players;
 }
