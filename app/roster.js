@@ -155,34 +155,66 @@ var swapPlayers = (players) => {
   var rbs = players.filter((player) => {return _u.indexOf(player['eligible_positions'], 'RB') !== -1})
   var tes = players.filter((player) => {return _u.indexOf(player['eligible_positions'], 'TE') !== -1})
 
-  // sort player positions by projected points
+  // sort player positions by projected points in decending order
   var sortedQbs = _u.sortBy(qbs, (w) => {return - w.projection})
   var sortedWrs = _u.sortBy(wrs, (w) => {return - w.projection})
   var sortedRbs = _u.sortBy(rbs, (w) => {return - w.projection})
   var sortedTes = _u.sortBy(tes, (w) => {return - w.projection})
 
-  console.log('QBS', qbs);
-  console.log('WRS', wrs);
-  console.log('sortedWrs', sortedWrs);
-  
   // determine available slots by position
-  var availableWrSlots = 0;
-  wrs.map((wr) => {if (wr.selected_position === 'WR') {availableWrSlots += 1;}});
-  console.log('availableWrSlots', availableWrSlots);
+  var availableQbSlots = qbs.filter((p) => {return p.selected_position === 'QB'});
+  var availableWrSlots = wrs.filter((p) => {return p.selected_position === 'WR'});
+  var availableRbSlots = rbs.filter((p) => {return p.selected_position === 'RB'});
+  var availableTeSlots = tes.filter((p) => {return p.selected_position === 'TE'});
 
 
-  // should we map or filter here...
-  var swapWrs = sortedWrs.filter((player, index) => {
-    if (index < availableWrSlots) {
+  var swapQbsIn = sortedQbs.filter((player, index) => {
+    if (index < availableQbSlots.length) {
       if (player.selected_position === 'BN') {
-        // activate player
+        // return player to activate
         console.log('this player should be activated:', player.name);
-        return player.name;
+        return true;
       }
     }
   });
 
-  console.log('swapWrs', swapWrs);
+  var swapQbsOut = sortedQbs.filter((player, index) => {
+    if (index >= availableQbSlots.length) {
+      if (player.selected_position === 'QB') {
+        // return player to activate
+        console.log('this player should be dectivated:', player.name);
+        return true;
+      }
+    }
+  });
+
+
+  var swapWrsIn = sortedWrs.filter((player, index) => {
+    if (index < availableWrSlots.length) {
+      if (player.selected_position === 'BN') {
+        // return player to activate
+        console.log('this player should be activated:', player.name);
+        return true;
+      }
+    }
+  });
+
+  var swapWrsOut = sortedWrs.filter((player, index) => {
+    if (index >= availableWrSlots.length) {
+      if (player.selected_position === 'WR') {
+        console.log('this player should be deactivated', player.name);
+        return true;
+      }
+    }
+  });
+
+  console.log('swapWrsIn', swapWrsIn);
+  console.log('swapWrsOut', swapWrsOut);
+  
+  console.log('swapQbsIn', swapQbsIn);
+  console.log('swapQbsOut', swapQbsOut);
+
+  
 
   return players;
 }

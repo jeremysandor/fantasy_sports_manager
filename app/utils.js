@@ -5,14 +5,14 @@ var Promise = require('bluebird');
 var crypto = require('crypto');
 
 
-User.findOne({_id: "568ef435000ad777555d1c41"}, function(err, user) {
+User.findOne({_id: "581e837a1f03102ddb498342"}, function(err, user) {
   TOKEN = user.token;
   TOKEN_SECRET = user.token_secret;
   SESSION_HANDLE = user.session_handle;
 });
 
 exports.fetchUser = () => {
-  return Promise.promisify(User.findOne.bind(User))({_id: "568ef435000ad777555d1c41"})
+  return Promise.promisify(User.findOne.bind(User))({_id: "581e837a1f03102ddb498342"})
 }
 
 exports.userCreds = (user) => {
