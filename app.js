@@ -12,7 +12,7 @@ var CronJob = require('cron').CronJob;
 // var roster = require('./app/roster');
 
 
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect(config.mongo_connection);
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function(callback) {console.log('database open')});
 
@@ -22,7 +22,7 @@ app.use(grant);
 app.use(bodyParser.json());
 app.use('/', routes);
 
-var server = app.listen(80, 'localhost', function() {
+var server = app.listen(config.port, config.base_url, function() {
   var port = server.address().port;
   var host = server.address().address;
   // console.log('process.env.NODE_ENV, process.env.HOST', process.env, process.env.HOST)

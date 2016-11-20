@@ -3,14 +3,15 @@ var rp = require('request-promise');
 var RosterPlayer = require('../models/rosterPlayer');
 var mongoose = require('mongoose');
 var db = mongoose.connection;
+var config = require('../config');
 
 // connect to mongo
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect(config.mongo_connection);
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function(callback) {console.log('database open')});
 
 //
-var base_url = 'http://localhost'
+var base_url = 'http://' + config.base_url
 
 // start with fresh RosterPlayer collection 
 // RosterPlayer.remove({}, function(err, removed) {console.log('removed', removed)} );

@@ -1,5 +1,6 @@
 var Promise = require('bluebird');
 var rp = require('request-promise');
+var config = require('../config');
 
 var base_url = 'http://localhost'
 
